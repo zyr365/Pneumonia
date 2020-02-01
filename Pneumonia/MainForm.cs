@@ -16,11 +16,12 @@ namespace Pneumonia
         static string url = "https://3g.dxy.cn/newh5/view/pneumonia";
         static int count = 0;
         static Document doc;
+        AutoSizeForm asc = new AutoSizeForm();
         public MainForm()
         {
             this.EnableGlass = false;
             InitializeComponent();
-            this.SizeChanged += new Resize(this).Form1_Resize;  //窗口自适应代码
+            //this.SizeChanged += new Resize(this).Form1_Resize;  //窗口自适应代码
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -32,6 +33,7 @@ namespace Pneumonia
            string html = Encoding.UTF8.GetString(htmlData);
            logWrite(html);//将网页内容写入txt文件，以方便查看
            toolStripStatusLabel1.Text = DateTime.Now.ToString();
+           //asc.controllInitializeSize(this);
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
@@ -157,6 +159,7 @@ namespace Pneumonia
 
         private void MainForm_SizeChanged(object sender, EventArgs e)
         {
+            asc.controlAutoSize(this);
             //判断是否选择的是最小化按钮
             if (WindowState == FormWindowState.Minimized)
             {
@@ -165,6 +168,7 @@ namespace Pneumonia
                 //图标显示在托盘区
                 notifyIcon1.Visible = true;
             }
+
         }
 
         private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)

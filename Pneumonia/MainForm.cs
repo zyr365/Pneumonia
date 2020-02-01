@@ -12,13 +12,15 @@ namespace Pneumonia
 {
     public partial class MainForm : DevComponents.DotNetBar.OfficeForm
     {
-        static string confirmedCount, suspectedCount, deadCount, curedCount, updateTime;
+        static string confirmedCount, suspectedCount, deadCount, curedCount, updateTime,dataUpdateTime;
         static string url = "https://3g.dxy.cn/newh5/view/pneumonia";
-        static Document doc = NSoupClient.Connect(url).Get();
+        static int count = 0;
+        static Document doc;
         public MainForm()
         {
             this.EnableGlass = false;
             InitializeComponent();
+            this.SizeChanged += new Resize(this).Form1_Resize;  //窗口自适应代码
         }
         private void MainForm_Load(object sender, EventArgs e)
         {
@@ -29,10 +31,13 @@ namespace Pneumonia
            byte[] htmlData = wc.DownloadData(url);
            string html = Encoding.UTF8.GetString(htmlData);
            logWrite(html);//将网页内容写入txt文件，以方便查看
+           toolStripStatusLabel1.Text = DateTime.Now.ToString();
         }
         private void timer1_Tick(object sender, EventArgs e)
         {
-            timer1.Interval = 600000;
+            dataUpdateTime = DateTime.Now.ToString();
+            count++;
+            timer1.Interval = 300000;
             GetData();
             lbl1.Text = "☛ 病毒: " + regularMatchStr("getStatisticsService", "virus\":\"(.+?)\",");
             lbl2.Text = "☛ 传染源: " + regularMatchStr("getStatisticsService", "infectSource\":\"(.+?)\",");
@@ -53,7 +58,7 @@ namespace Pneumonia
         public static void GetData()
         {
             //直接通过url来获取Document对象
-            //Document doc = NSoupClient.Connect(address).Get();
+            doc = NSoupClient.Connect(url).Get();
             //先获取id为artContent的元素，再获取所有的p标签
             updateTime = ConvertStringToDateTime(regularMatchStr("getStatisticsService", "modifyTime\":(.+?),")).ToString();
             confirmedCount = regularMatchStr("getStatisticsService", "confirmedCount\":(.+?),");
@@ -129,6 +134,11 @@ namespace Pneumonia
                 }
             }
 
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            toolStripStatusLabel1.Text = DateTime.Now.ToString() + "  刷新次数 : " + count + "  最新刷新时间 ：" + dataUpdateTime;
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)

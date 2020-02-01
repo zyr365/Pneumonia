@@ -6,20 +6,21 @@ using NSoup.Nodes;
 using System.IO;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Windows.Forms;
 
 namespace Pneumonia
 {
-    public partial class Form1 : DevComponents.DotNetBar.OfficeForm
+    public partial class MainForm : DevComponents.DotNetBar.OfficeForm
     {
         static string confirmedCount, suspectedCount, deadCount, curedCount, updateTime;
         static string url = "https://3g.dxy.cn/newh5/view/pneumonia";
         static Document doc = NSoupClient.Connect(url).Get();
-        public Form1()
+        public MainForm()
         {
             this.EnableGlass = false;
             InitializeComponent();
         }
-        private void Form1_Load(object sender, EventArgs e)
+        private void MainForm_Load(object sender, EventArgs e)
         {
             timer1.Enabled = true;
             timer1.Interval = 1;
@@ -98,6 +99,78 @@ namespace Pneumonia
             sw.Write(content);
             sw.Close(); sw.Dispose();
         }
-    
-}
+
+        private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if (e.Button == MouseButtons.Left)//判断鼠标的按键            
+            {
+                //点击时判断form是否显示,显示就隐藏,隐藏就显示               
+                if (this.WindowState == FormWindowState.Normal)
+                {
+                    this.WindowState = FormWindowState.Minimized;
+                    this.Hide();
+                }
+                else if (this.WindowState == FormWindowState.Minimized)
+                {
+                    this.Show();
+                    this.WindowState = FormWindowState.Normal;
+                    this.Activate();
+                }
+            }
+            else if (e.Button == MouseButtons.Right)
+            {
+                //右键退出事件                
+                if (MessageBox.Show("是否需要关闭程序？", "提示:", MessageBoxButtons.OKCancel, MessageBoxIcon.Exclamation) == DialogResult.OK)//出错提示                
+                {
+                    //关闭窗口                    
+                    DialogResult = DialogResult.No;
+                    Dispose();
+                    Close();
+                }
+            }
+
+        }
+
+        private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (MessageBox.Show("是否确认退出程序？", "退出", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            {
+                // 关闭所有的线程
+                this.Dispose();
+                this.Close();
+            }
+            else
+            {
+                e.Cancel = true;
+            }
+        }
+
+        private void MainForm_SizeChanged(object sender, EventArgs e)
+        {
+            //判断是否选择的是最小化按钮
+            if (WindowState == FormWindowState.Minimized)
+            {
+                //隐藏任务栏区图标
+                this.ShowInTaskbar = false;
+                //图标显示在托盘区
+                notifyIcon1.Visible = true;
+            }
+        }
+
+        private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (MessageBox.Show("是否确认退出程序？", "退出", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            {
+                // 关闭所有的线程
+                this.Dispose();
+                this.Close();
+            }
+        }
+
+        private void 显示ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            WindowState = FormWindowState.Normal;
+        }
+
+    }
 }
